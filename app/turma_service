@@ -1,0 +1,270 @@
+"""
+Serviço para interação do usuário via linha de comando com a entidade Turma
+"""
+import sys
+import os
+
+# Adicionar o diretório pai ao path para permitir imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from bd.database import DatabaseConnection
+from dao.turma_dao import TurmaDAO
+from model.turma import Turma
+
+
+class TurmaService:
+
+    def __init__(self, db: DatabaseConnection):
+        self.db = db
+        self.turmaDao = TurmaDAO(db)
+
+    def exibirMenu(self):
+        """Exibe o menu principal de opções"""
+        print("\n" + "="*50)
+        print("  SISTEMA DE GERENCIAMENTO DE TURMAS ")
+        print("="*50)
+        print("1. Criar turma")
+        print("2. Listar todas as turmas")
+        print("3. Buscar turma por ID")
+        print("4. Buscar turma por nome")
+        print("5. Atualizar turma")
+        print("6. Deletar turma")
+        print("0. Sair")
+        print("="*50)
+
+    def criarTurma(self):
+        """Solicita dados do usuário e cria uma nova turma"""
+        print("\n--- CRIAR CATEGORIA ---")
+        nome = input("Digite o nome da turma: ").strip()
+
+        if not nome:
+            print("❌ Erro: O nome da turma não pode ser vazio!")
+            return
+
+        try:
+            # Verificar se já existe uma turma com esse nome
+            turmaExistente = self.turmaDao.buscarPorNome(nome)
+            if turmaExistente:
+                print(f"❌ Erro: Já existe uma turma com o nome '{nome}' (ID: {turmaExistente.id})")
+                return
+
+            # Criar nova turma
+            turma = turma(id=None, nome=nome)
+            turmaId = self.turmaDao.salvar(turma)
+            print(f"✅ Turma criada com sucesso!")
+            print(f"   ID: {turmaId}")
+            print(f"   Nome: {turma.nome}")
+
+        except Exception as e:
+            print(f"❌ Erro ao criar turma: {e}")
+
+    def listarTurma(self):
+        """Lista todas as turmas cadastradas"""
+        print("\n--- LISTAR TODAS AS TURMAS ---")
+
+        try:
+            turmas = self.turmaDao.listarTodas()
+
+            if not turmas:
+                print("⚠️  Nenhuma turma cadastrada.")
+                return
+
+            print(f"\nTotal de turmas: {len(turmas)}")
+            print("\n" + "-"*50)
+            print(f"{'ID':<5} | {'Nome':<30}")
+            print("-"*50)
+
+            for turma in turmas:
+                print(f"{turma.id:<5} | {turma.nome:<30}")
+
+            print("-"*50)
+
+        except Exception as e:
+            print(f"❌ Erro ao listar turmas: {e}")
+
+    def buscarPorId(self):
+        """Solicita um ID e busca a turma correspondente"""
+        print("\n--- BUSCAR TURMA POR ID ---")
+
+        try:
+            idStr = input("Digite o ID da turma: ").strip()
+            turmaId = int(idStr)
+
+            turma = self.turmaDao.buscarPorId(turmaId)
+
+            if turma:
+                print("\n✅ Turma encontrada:")
+                print(f"   ID: {turma.id}")
+                print(f"   Nome: {turma.nome}")
+            else:
+                print(f"⚠️  Turma com ID {turmaId} não encontrada.")
+
+        except ValueError:
+            print("❌ Erro: ID deve ser um número inteiro!")
+        except Exception as e:
+            print(f"❌ Erro ao buscar turma: {e}")
+
+    def buscarPorNome(self):
+        """Solicita um nome e busca a turma correspondente"""
+        print("\n--- BUSCAR TURMA POR NOME ---")
+
+        nome = input("Digite o nome da turma: ").strip()
+
+        if not nome:
+            print("❌ Erro: O nome não pode ser vazio!")
+            return
+
+        try:
+            turma = self.turmaDao.buscarPorNome(nome)
+
+            if turma:
+                print("\n✅ Turma encontrada:")
+                print(f"   ID: {turma.id}")
+                print(f"   Nome: {turma.nome}")
+            else:
+                print(f"⚠️  Turma '{nome}' não encontrada.")
+
+        except Exception as e:
+            print(f"❌ Erro ao buscar turma: {e}")
+
+    def atualizarTurma(self):
+        """Solicita dados do usuário e atualiza uma turma existente"""
+        print("\n--- ATUALIZAR TURMA ---")
+
+        try:
+            idStr = input("Digite o ID da turma a atualizar: ").strip()
+            turmaId = int(idStr)
+
+            # Buscar a turma existente
+            turma = self.turmaDao.buscarPorId(turmaId)
+
+            if not turma:
+                print(f"⚠️  Turma com ID {turmaId} não encontrada.")
+                return
+
+            print(f"\nTurma atual:")
+            print(f"   ID: {turma.id}")
+            print(f"   Nome: {turma.nome}")
+
+            novoNome = input("\nDigite o novo nome da turma (ou Enter para manter): ").strip()
+
+            if not novoNome:
+                print("⚠️  Operação cancelada. Nome não foi alterado.")
+                return
+
+            # Verificar se já existe outra turma com esse nome
+            turmaExistente = self.turmaDao.buscarPorNome(novoNome)
+            if turmaExistente and turmaExistente.id != turmaId:
+                print(f"❌ Erro: Já existe outra turma com o nome '{novoNome}' (ID: {turmaExistente.id})")
+                return
+
+            # Atualizar turma
+            turma.nome = novoNome
+            self.turmaDao.salvar(turma)
+            print(f"\n✅ Turma atualizada com sucesso!")
+            print(f"   ID: {turma.id}")
+            print(f"   Nome: {turma.nome}")
+
+        except ValueError:
+            print("❌ Erro: ID deve ser um número inteiro!")
+        except Exception as e:
+            print(f"❌ Erro ao atualizar turma: {e}")
+
+    def deletarTurma(self):
+        """Solicita um ID e deleta a turma correspondente"""
+        print("\n--- DELETAR TURMA ---")
+
+        try:
+            idStr = input("Digite o ID da turma a deletar: ").strip()
+            turmaId = int(idStr)
+
+            # Buscar a turma existente
+            turma = self.turmaDao.buscarPorId(turmaId)
+
+            if not turma:
+                print(f"⚠️  Turma com ID {turmaId} não encontrada.")
+                return
+
+            print(f"\nTurma a ser deletada:")
+            print(f"   ID: {turma.id}")
+            print(f"   Nome: {turma.nome}")
+
+            confirmacao = input("\n⚠️  Tem certeza que deseja deletar esta turma? (s/N): ").strip().lower()
+
+            if confirmacao != 's':
+                print("❌ Operação cancelada.")
+                return
+
+            sucesso = self.turmaDao.deletar(turma)
+
+            if sucesso:
+                print(f"\n✅ Turma deletada com sucesso!")
+            else:
+                print(f"\n❌ Erro ao deletar turma.")
+
+        except ValueError:
+            print("❌ Erro: ID deve ser um número inteiro!")
+        except Exception as e:
+            print(f"❌ Erro ao deletar turma: {e}")
+
+    def executar(self):
+        """Método principal que executa o loop do menu"""
+        try:
+            while True:
+                self.exibirMenu()
+                opcao = input("\nEscolha uma opção: ").strip()
+
+                if opcao == '0':
+                    print("\n👋 Encerrando o sistema...")
+                    break
+                elif opcao == '1':
+                    self.criarTurma()
+                elif opcao == '2':
+                    self.listarTurma()
+                elif opcao == '3':
+                    self.buscarPorId()
+                elif opcao == '4':
+                    self.buscarPorNome()
+                elif opcao == '5':
+                    self.atualizarTurma()
+                elif opcao == '6':
+                    self.deletarTurma()
+                else:
+                    print("❌ Opção inválida! Tente novamente.")
+
+                input("\nPressione Enter para continuar...")
+
+        except KeyboardInterrupt:
+            print("\n\n👋 Sistema encerrado pelo usuário.")
+        except Exception as e:
+            print(f"\n❌ Erro inesperado: {e}")
+            import traceback
+            traceback.print_exc()
+
+
+def main():
+    """Função principal para executar o serviço"""
+    db = DatabaseConnection('exemplo_bd.db')
+
+    try:
+        # Conectar ao banco
+        db.conectar()
+
+        # Garantir que as tabelas existam
+        db.criarTabelas()
+
+        # Criar e executar o serviço
+        service = TurmaService(db)
+        service.executar()
+
+    except Exception as e:
+        print(f"❌ Erro ao inicializar o sistema: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        db.fechar()
+        print("✓ Conexão com banco de dados encerrada.")
+
+
+if __name__ == "__main__":
+    main()
