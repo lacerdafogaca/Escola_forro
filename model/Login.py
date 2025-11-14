@@ -3,12 +3,43 @@ import os
 
 class Login:
     def __init__(self, id, email, senha, usuario_id):
-        self.id = id
-        self.email = email
-        self.usuario_id = usuario_id
-        self.salt = os.urandom(16)  # Gera um salt aleatório de 16 bytes 
-        self.senha = self.gerar_hash_senha(senha) 
+        self.__id = id
+        self.__email = email
+        self.__usuario_id = usuario_id
+        self.__salt = os.urandom(16)  # Gera um salt aleatório de 16 bytes 
+        self.__senha = self.gerar_hash_senha(senha) 
+    @property
+    def id(self):
+        return self.__id
     
+    @id.setter
+    def id(self, value):
+        self.__id = value
+
+    @property
+    def email(self):
+        return self.__email
+    
+    @email.setter
+    def email(self, value):
+        self.__email = value
+
+    @property
+    def senha(self):
+        return self.__senha
+    
+    @senha.setter
+    def senha(self, value):
+        self.__senha = value
+    
+    @property
+    def usuario_id(self):
+        return self.__usuario_id
+    
+    @usuario_id.setter
+    def usuario_id(self, value):
+        self.__usuario_id = value
+
     # Método para gerar o hash da senha
     def gerar_hash_senha(self, senha):
         senha_salt = self.salt + senha.encode('utf-8')
