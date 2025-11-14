@@ -74,14 +74,6 @@ class DatabaseConnection:
         );
         """)
 
-        # Tabela Nivel
-        cur.execute("""
-         CREATE TABLE IF NOT EXISTS nivel(
-            id INTEGER  PRIMARY  KEY AUTOINCREMENT,
-            nome VARCHAR(100) UNIQUE NOT NULL
-            );
-         """)
-
     def limparDados(self):
         """Remove todos os dados das tabelas"""
         cur = self.cursor()
@@ -89,5 +81,4 @@ class DatabaseConnection:
         cur.execute("DELETE FROM turma;")
         cur.execute("DELETE FROM pessoa;")
         cur.execute("DELETE FROM categoria;")
-        cur.execute("DELETE FROM nivel;")
-        cur.execute("DELETE FROM sqlite_sequence WHERE name IN ('pessoa', 'categoria', 'turma', 'login', 'nivel');")
+        cur.execute("DELETE FROM sqlite_sequence WHERE name IN ('pessoa', 'categoria', 'turma', 'login');")

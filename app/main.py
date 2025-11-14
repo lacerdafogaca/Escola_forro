@@ -15,7 +15,6 @@ from categoria_service import CategoriaService
 from pessoa_service import PessoaService
 from turma_service import TurmaService
 from login_service import LoginService
-from nivel_service import NivelService
 
 class SistemaPrincipal:
     
@@ -25,7 +24,6 @@ class SistemaPrincipal:
         self.pessoaService = PessoaService(db)
         self.turmaService = TurmaService(db)
         self.loginService = LoginService(db)
-        self.nivelService = NivelService(db)
     
     def exibirMenuPrincipal(self):
         """Exibe o menu principal de opções"""
@@ -36,8 +34,7 @@ class SistemaPrincipal:
         print("2. Gerenciar Pessoas")
         print("3. Gerenciar Turmas")
         print("4. Gerenciar Logins")
-        print("5. Gerenciar Niveis")
-        print("6. Limpar todos os dados do banco")
+        print("5. Limpar todos os dados do banco")
         print("0. Sair")
         print("="*50)
     
@@ -51,7 +48,6 @@ class SistemaPrincipal:
         print("  - Turmas")
         print("  - Pessoas")
         print("  - Categorias")
-        print("  - Niveis")
         print()
         confirmacao = input("Tem certeza que deseja continuar? Digite 'CONFIRMAR' para prosseguir: ").strip()
         
@@ -102,16 +98,11 @@ class SistemaPrincipal:
                     print("="*50)
                     self.loginService.executar()
                 elif opcao == '5':
-                    print("\n" + "=" * 50)
-                    print("  ENTRANDO NO GERENCIAMENTO DE NIVEIS")
-                    print("=" * 50)
-                    self.nivelService.executar()
-                elif opcao == '6':
                     self.limparDados()
                 else:
                     print("❌ Opção inválida! Tente novamente.")
                 
-                if opcao in ['0', '1', '2', '3', '4', '5', '6']:
+                if opcao in ['1', '2', '3', '4', '5']:
                     input("\nPressione Enter para voltar ao menu principal...")
         
         except KeyboardInterrupt:
