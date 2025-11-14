@@ -33,5 +33,5 @@ class Login:
         self.senha = self.gerar_hash_senha(nova_senha)
         print("Senha alterada com sucesso!")
 
-     def __str__(self):
+    def __str__(self):
         return f"Login(id={self.id}, email={self.email}, usuario_id={self.usuario_id})"
