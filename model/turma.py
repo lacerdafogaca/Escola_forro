@@ -1,0 +1,14 @@
+"""
+Classe modelo para a tabela turma
+"""
+
+class Turma:
+    def __init__(self, id: int, horario: str, nivel: str, professor: str):
+        self.id = id
+        self.horario = horario
+        self.nivel = nivel
+        self.professor = professor
+
+    def __str__(self):
+        return (f"Turma(id={self.id}, horario='{self.horario}', "
+                f"nivel='{self.nivel}', professor='{self.professor}')")
