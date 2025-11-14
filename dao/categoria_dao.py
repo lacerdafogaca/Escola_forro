@@ -1,5 +1,5 @@
 """
-DAO (Data Access Object) para operações de banco de dados da tabela categoria
+DAO (Data Access Object) para operações do banco de dados da tabela categoria
 """
 from bd.database import DatabaseConnection
 from model.categoria import Categoria
