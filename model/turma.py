@@ -1,7 +1,6 @@
 """
 Classe modelo para a tabela turma
 """
-from model.categoria import Categoria
 
 class Turma:
     def __init__(self, id: int, horario: str, nivel: str, professor: str):
@@ -10,7 +9,6 @@ class Turma:
         self.nivel = nivel
         self.professor = professor
 
-
     def __str__(self):
         return (f"Turma(id={self.id}, horario='{self.horario}', "
-                f"professor='{self.professor}')")
+                f"nivel='{self.nivel}', professor='{self.professor}')")
