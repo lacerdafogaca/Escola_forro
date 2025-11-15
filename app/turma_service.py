@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from bd.database import DatabaseConnection
 from dao.turma_dao import TurmaDAO
 from dao.pessoa_dao import PessoaDAO
+from dao.nivel_dao import NivelDAO
 from model.turma import Turma
 
 
@@ -19,6 +20,7 @@ class TurmaService:
         self.db = db
         self.turmaDao = TurmaDAO(db)
         self.pessoaDao = PessoaDAO(db)
+        self.nivelDao = NivelDAO(db)
 
     def exibirMenu(self):
         """Exibe o menu principal de opções"""
@@ -69,6 +71,41 @@ class TurmaService:
             print("❌ Erro: ID deve ser um número inteiro!")
             return None
 
+    def listarNiveisDisponiveis(self):
+        """Lista todos os níveis disponíveis para seleção"""
+        niveis = self.nivelDao.listarTodas()
+        if not niveis:
+            print("⚠️  Nenhum nível cadastrado. Cadastre um nível primeiro!")
+            print("💡 Dica: Vá ao menu principal > 5. Gerenciar Níveis")
+            return None
+
+        print("\nNíveis disponíveis:")
+        print("-"*30)
+        for nivel in niveis:
+            print(f"  {nivel.id}. {nivel.nome}")
+        print("-"*30)
+        return niveis
+
+    def selecionarNivel(self):
+        """Solicita ao usuário que selecione um nível"""
+        niveis = self.listarNiveisDisponiveis()
+        if not niveis:
+            return None
+
+        try:
+            nivelIdStr = input("Digite o ID do nível: ").strip()
+            nivelId = int(nivelIdStr)
+
+            nivel = self.nivelDao.buscarPorId(nivelId)
+            if not nivel:
+                print(f"❌ Erro: Nível com ID {nivelId} não encontrado!")
+                return None
+
+            return nivel
+        except ValueError:
+            print("❌ Erro: ID deve ser um número inteiro!")
+            return None
+
     def criarTurma(self):
         """Solicita dados do usuário e cria uma nova turma"""
         print("\n--- CRIAR TURMA ---")
@@ -78,10 +115,9 @@ class TurmaService:
             print("❌ Erro: O horário não pode ser vazio!")
             return
 
-        print("\nNíveis disponíveis: Básico, Intermediário, Avançado")
-        nivel = input("Digite o nível da turma: ").strip()
+        # Selecionar nível
+        nivel = self.selecionarNivel()
         if not nivel:
-            print("❌ Erro: O nível não pode ser vazio!")
             return
 
         # Selecionar professor
@@ -103,7 +139,7 @@ class TurmaService:
         """Exibe os detalhes completos de uma turma"""
         print(f"\n   ID: {turma.id}")
         print(f"   Horário: {turma.horario}")
-        print(f"   Nível: {turma.nivel}")
+        print(f"   Nível: {turma.nivel.nome} (ID: {turma.nivel.id})")
         print(f"   Professor: {turma.professor}")
 
     def listarTurmas(self):
@@ -118,14 +154,14 @@ class TurmaService:
                 return
 
             print(f"\nTotal de turmas: {len(turmas)}")
-            print("\n" + "-"*80)
-            print(f"{'ID':<5} | {'Horário':<15} | {'Nível':<15} | {'Professor':<30}")
-            print("-"*80)
+            print("\n" + "-"*90)
+            print(f"{'ID':<5} | {'Horário':<15} | {'Nível':<20} | {'Professor':<30}")
+            print("-"*90)
 
             for turma in turmas:
-                print(f"{turma.id:<5} | {turma.horario:<15} | {turma.nivel:<15} | {turma.professor[:29]:<30}")
+                print(f"{turma.id:<5} | {turma.horario:<15} | {turma.nivel.nome:<20} | {turma.professor[:29]:<30}")
 
-            print("-"*80)
+            print("-"*90)
 
         except Exception as e:
             print(f"❌ Erro ao listar turmas: {e}")
@@ -166,10 +202,10 @@ class TurmaService:
 
             if turmas:
                 print(f"\n✅ {len(turmas)} turma(s) encontrada(s):")
-                print("\n" + "-"*80)
+                print("\n" + "-"*90)
                 for turma in turmas:
-                    print(f"ID: {turma.id} | {turma.horario} | {turma.nivel} | Professor: {turma.professor}")
-                print("-"*80)
+                    print(f"ID: {turma.id} | {turma.horario} | Nível: {turma.nivel.nome} | Professor: {turma.professor}")
+                print("-"*90)
             else:
                 print(f"⚠️  Nenhuma turma encontrada com professor contendo '{professor}'.")
 
@@ -180,25 +216,32 @@ class TurmaService:
         """Lista turmas de um nível específico"""
         print("\n--- BUSCAR TURMAS POR NÍVEL ---")
 
-        print("Níveis disponíveis: Básico, Intermediário, Avançado")
-        nivel = input("Digite o nível: ").strip()
-
-        if not nivel:
-            print("❌ Erro: O nível não pode ser vazio!")
+        niveis = self.listarNiveisDisponiveis()
+        if not niveis:
             return
 
         try:
-            turmas = self.turmaDao.buscarPorNivel(nivel)
+            nivelIdStr = input("Digite o ID do nível: ").strip()
+            nivelId = int(nivelIdStr)
+
+            nivel = self.nivelDao.buscarPorId(nivelId)
+            if not nivel:
+                print(f"❌ Erro: Nível com ID {nivelId} não encontrado!")
+                return
+
+            turmas = self.turmaDao.buscarPorNivel(nivelId)
 
             if turmas:
-                print(f"\n✅ {len(turmas)} turma(s) encontrada(s) no nível '{nivel}':")
+                print(f"\n✅ {len(turmas)} turma(s) encontrada(s) no nível '{nivel.nome}':")
                 print("\n" + "-"*80)
                 for turma in turmas:
                     print(f"ID: {turma.id} | {turma.horario} | Professor: {turma.professor}")
                 print("-"*80)
             else:
-                print(f"⚠️  Nenhuma turma encontrada no nível '{nivel}'.")
+                print(f"⚠️  Nenhuma turma encontrada no nível '{nivel.nome}'.")
 
+        except ValueError:
+            print("❌ Erro: ID deve ser um número inteiro!")
         except Exception as e:
             print(f"❌ Erro ao buscar turmas: {e}")
 
@@ -228,9 +271,12 @@ class TurmaService:
                 turma.horario = novoHorario
 
             # Nível
-            novoNivel = input(f"Nível [{turma.nivel}]: ").strip()
-            if novoNivel:
-                turma.nivel = novoNivel
+            print(f"\nNível atual: {turma.nivel.nome} (ID: {turma.nivel.id})")
+            trocarNivel = input("Deseja trocar o nível? (s/N): ").strip().lower()
+            if trocarNivel == 's':
+                novoNivel = self.selecionarNivel()
+                if novoNivel:
+                    turma.nivel = novoNivel
 
             # Professor
             print(f"\nProfessor atual: {turma.professor}")

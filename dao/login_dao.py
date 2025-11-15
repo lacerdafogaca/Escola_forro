@@ -75,11 +75,14 @@ class LoginDAO:
         # Criar o login sem passar senha no construtor
         # pois a senha já está hasheada no banco
         login = object.__new__(Login)
-        login.id = row['id']
-        login.email = row['email']
-        login.senha = row['senha']
-        login.salt = row['salt']
-        login.usuario_id = row['usuario_id']
+        
+        # Definir atributos privados diretamente
+        login._Login__id = row['id']
+        login._Login__email = row['email']
+        login._Login__senha = row['senha']
+        login._Login__salt = row['salt']
+        login._Login__usuario_id = row['usuario_id']
+        
         return login
 
     def deletar(self, login: Login):

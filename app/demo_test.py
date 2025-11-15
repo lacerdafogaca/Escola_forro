@@ -12,9 +12,11 @@ from dao.categoria_dao import CategoriaDAO
 from dao.pessoa_dao import PessoaDAO
 from dao.turma_dao import TurmaDAO
 from dao.login_dao import LoginDAO
+from dao.nivel_dao import NivelDAO
 from model.categoria import Categoria
 from model.pessoa import Pessoa
 from model.turma import Turma
+from model.nivel import Nivel
 from model.Login import Login
 
 
@@ -36,6 +38,7 @@ def criar_dados_exemplo(db):
     pessoaDao = PessoaDAO(db)
     turmaDao = TurmaDAO(db)
     loginDao = LoginDAO(db)
+    nivelDao = NivelDAO(db)
     
     # 1. CRIAR CATEGORIAS
     print("\n1️⃣  Criando categorias...")
@@ -56,8 +59,27 @@ def criar_dados_exemplo(db):
     cat_admin.id = categoriaDao.salvar(cat_admin)
     print(f"   ✅ Categoria criada: {cat_admin.nome} (ID: {cat_admin.id})")
     
-    # 2. CRIAR PESSOAS
-    print("\n2️⃣  Criando pessoas...")
+    # 2. CRIAR NÍVEIS
+    print("\n2️⃣  Criando níveis...")
+    niveis = {}
+    
+    nivel_basico = Nivel(id=None, nome="Básico")
+    nivel_basico.id = nivelDao.salvar(nivel_basico)
+    niveis['basico'] = nivel_basico
+    print(f"   ✅ Nível criado: {nivel_basico.nome} (ID: {nivel_basico.id})")
+    
+    nivel_intermediario = Nivel(id=None, nome="Intermediário")
+    nivel_intermediario.id = nivelDao.salvar(nivel_intermediario)
+    niveis['intermediario'] = nivel_intermediario
+    print(f"   ✅ Nível criado: {nivel_intermediario.nome} (ID: {nivel_intermediario.id})")
+    
+    nivel_avancado = Nivel(id=None, nome="Avançado")
+    nivel_avancado.id = nivelDao.salvar(nivel_avancado)
+    niveis['avancado'] = nivel_avancado
+    print(f"   ✅ Nível criado: {nivel_avancado.nome} (ID: {nivel_avancado.id})")
+    
+    # 3. CRIAR PESSOAS
+    print("\n3️⃣  Criando pessoas...")
     pessoas = []
     
     # Professores
@@ -123,42 +145,42 @@ def criar_dados_exemplo(db):
     pessoas.append(admin)
     print(f"   ✅ Pessoa criada: {admin.nome} - {admin.categoria.nome}")
     
-    # 3. CRIAR TURMAS
-    print("\n3️⃣  Criando turmas...")
+    # 4. CRIAR TURMAS
+    print("\n4️⃣  Criando turmas...")
     turmas = []
     
     turma1 = Turma(
         id=None,
         horario="08:00-10:00",
-        nivel="Básico",
+        nivel=niveis['basico'],
         professor=prof1.nome
     )
     turma1.id = turmaDao.salvar(turma1)
     turmas.append(turma1)
-    print(f"   ✅ Turma criada: {turma1.nivel} - {turma1.horario} - Prof. {turma1.professor}")
+    print(f"   ✅ Turma criada: {turma1.nivel.nome} - {turma1.horario} - Prof. {turma1.professor}")
     
     turma2 = Turma(
         id=None,
         horario="10:30-12:30",
-        nivel="Intermediário",
+        nivel=niveis['intermediario'],
         professor=prof1.nome
     )
     turma2.id = turmaDao.salvar(turma2)
     turmas.append(turma2)
-    print(f"   ✅ Turma criada: {turma2.nivel} - {turma2.horario} - Prof. {turma2.professor}")
+    print(f"   ✅ Turma criada: {turma2.nivel.nome} - {turma2.horario} - Prof. {turma2.professor}")
     
     turma3 = Turma(
         id=None,
         horario="14:00-16:00",
-        nivel="Avançado",
+        nivel=niveis['avancado'],
         professor=prof2.nome
     )
     turma3.id = turmaDao.salvar(turma3)
     turmas.append(turma3)
-    print(f"   ✅ Turma criada: {turma3.nivel} - {turma3.horario} - Prof. {turma3.professor}")
+    print(f"   ✅ Turma criada: {turma3.nivel.nome} - {turma3.horario} - Prof. {turma3.professor}")
     
-    # 4. CRIAR LOGINS
-    print("\n4️⃣  Criando logins...")
+    # 5. CRIAR LOGINS
+    print("\n5️⃣  Criando logins...")
     logins = []
     
     # Login para admin
@@ -200,6 +222,7 @@ def criar_dados_exemplo(db):
     
     return {
         'categorias': categorias,
+        'niveis': niveis,
         'pessoas': pessoas,
         'turmas': turmas,
         'logins': logins
@@ -216,13 +239,17 @@ def exibir_resumo(dados):
     for nome, cat in dados['categorias'].items():
         print(f"   • {cat.nome} (ID: {cat.id})")
     
+    print(f"\n📊 Níveis: {len(dados['niveis'])}")
+    for nome, nivel in dados['niveis'].items():
+        print(f"   • {nivel.nome} (ID: {nivel.id})")
+    
     print(f"\n👥 Pessoas: {len(dados['pessoas'])}")
     for pessoa in dados['pessoas']:
         print(f"   • {pessoa.nome} - {pessoa.categoria.nome} ({pessoa.email})")
     
     print(f"\n🎓 Turmas: {len(dados['turmas'])}")
     for turma in dados['turmas']:
-        print(f"   • {turma.nivel} - {turma.horario} - Prof. {turma.professor}")
+        print(f"   • {turma.nivel.nome} - {turma.horario} - Prof. {turma.professor}")
     
     print(f"\n🔐 Logins: {len(dados['logins'])}")
     for login in dados['logins']:
@@ -234,7 +261,7 @@ def exibir_resumo(dados):
 def testar_autenticacao(db):
     """Testa o sistema de autenticação"""
     print("\n" + "="*60)
-    print("  🔐 TESTANDO SISTEMA DE AUTENTICAÇÃO")
+    print("  🔒 TESTANDO SISTEMA DE AUTENTICAÇÃO")
     print("="*60)
     
     loginDao = LoginDAO(db)
@@ -297,7 +324,7 @@ def main():
         traceback.print_exc()
     finally:
         db.fechar()
-        print("\n✓ Conexão com banco de dados encerrada.")
+        print("\n✔ Conexão com banco de dados encerrada.")
 
 
 if __name__ == "__main__":

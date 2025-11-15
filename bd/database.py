@@ -52,13 +52,22 @@ class DatabaseConnection:
         );
         """)
         
-        # Tabela turma (corrigida)
+        # Tabela nivel
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS nivel(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome VARCHAR(100) UNIQUE NOT NULL
+        );
+        """)
+        
+        # Tabela turma (ATUALIZADA - com foreign key para nivel)
         cur.execute("""
         CREATE TABLE IF NOT EXISTS turma(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 horario VARCHAR(30) NOT NULL,
-                nivel VARCHAR(30) NOT NULL,
-                professor TEXT NOT NULL
+                nivel_id INTEGER NOT NULL,
+                professor TEXT NOT NULL,
+                FOREIGN KEY (nivel_id) REFERENCES nivel(id)
         );
         """)
         
@@ -73,14 +82,6 @@ class DatabaseConnection:
                 FOREIGN KEY (usuario_id) REFERENCES pessoa(id)
         );
         """)
-
-        # Tabela Nivel
-        cur.execute("""
-         CREATE TABLE IF NOT EXISTS nivel(
-            id INTEGER  PRIMARY  KEY AUTOINCREMENT,
-            nome VARCHAR(100) UNIQUE NOT NULL
-            );
-         """)
 
     def limparDados(self):
         """Remove todos os dados das tabelas"""
