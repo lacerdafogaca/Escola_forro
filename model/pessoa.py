@@ -54,8 +54,15 @@ class Pessoa:
     def telefone(self, value):
         self.__telefone = value
     
+    @property
+    def categoria(self):
+        return self.__categoria
+    
+    @categoria.setter
+    def categoria(self, value):
+        self.__categoria = value
+    
     def __str__(self):
         return (f"Pessoa(id={self.id}, nome='{self.nome}', "
-                f"email='{self.email}', idade={self.idade}, "
+                f"email='{self.email}', "
                 f"categoria_id={self.categoria.id})")
-
